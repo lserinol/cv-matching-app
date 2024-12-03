@@ -1,0 +1,26 @@
+name: cv_matching_application
+description: A web-based application that allows users to upload their CVs and matches them with similar CVs using advanced machine learning techniques.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^1.10.0
+  firebase_storage: ^10.0.0
+  cloud_firestore: ^3.1.5
+  provider: ^6.0.1
+  http: ^0.13.3
+  pdf: ^3.3.0
+  docx: ^0.2.0
+  nlp: ^0.1.0
+  transformers: ^4.11.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
