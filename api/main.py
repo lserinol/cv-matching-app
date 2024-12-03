@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List
 import shutil
 import os
+from api.database import initialize_db, insert_cv, get_cvs_from_db
 
 app = FastAPI()
 
@@ -20,9 +21,11 @@ class MatchingResult(BaseModel):
 cvs = []
 matching_results = []
 
+initialize_db()
+
 @app.get("/api/cvs", response_model=List[CV])
 async def get_cvs():
-    return cvs
+    return get_cvs_from_db()
 
 @app.post("/api/cvs")
 async def upload_cv(file: UploadFile = File(...)):
@@ -36,7 +39,7 @@ async def upload_cv(file: UploadFile = File(...)):
         uploadedAt="2023-01-01T00:00:00Z",
         extractedInfo={}
     )
-    cvs.append(cv)
+    insert_cv(cv.fileName, cv.downloadURL, cv.uploadedAt, cv.extractedInfo)
     return {"info": "CV uploaded successfully"}
 
 @app.get("/api/matching_results", response_model=List[MatchingResult])
