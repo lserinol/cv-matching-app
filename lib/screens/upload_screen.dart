@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
 
 class UploadScreen extends StatefulWidget {
   @override
@@ -28,23 +29,14 @@ class _UploadScreenState extends State<UploadScreen> {
       String fileName = file.name;
       String filePath = file.path!;
 
-      FirebaseStorage storage = FirebaseStorage.instance;
-      Reference ref = storage.ref().child('cvs/$fileName');
-      UploadTask uploadTask = ref.putFile(File(filePath));
+      var request = http.MultipartRequest('POST', Uri.parse('http://localhost:3000/api/cvs'));
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        setState(() {
-          _uploadProgress = snapshot.bytesTransferred / snapshot.totalBytes;
-        });
-      });
+      var response = await request.send();
 
-      await uploadTask.whenComplete(() async {
-        String downloadURL = await ref.getDownloadURL();
-        await FirebaseFirestore.instance.collection('cvs').add({
-          'fileName': fileName,
-          'downloadURL': downloadURL,
-          'uploadedAt': Timestamp.now(),
-        });
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonResponse = json.decode(responseData);
 
         setState(() {
           _isUploading = false;
@@ -53,12 +45,29 @@ class _UploadScreenState extends State<UploadScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('CV uploaded successfully!')),
         );
-      });
+      } else {
+        setState(() {
+          _isUploading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload CV')),
+        );
+      }
     }
   }
 
-  void _startMatchingProcess() {
-    // Implement the matching process initiation logic here
+  void _startMatchingProcess() async {
+    final response = await http.post(Uri.parse('http://localhost:3000/api/matching_results'));
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Matching process started successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to start matching process')),
+      );
+    }
   }
 
   @override

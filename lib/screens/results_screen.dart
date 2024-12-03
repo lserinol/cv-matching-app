@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ResultsScreen extends StatefulWidget {
   @override
@@ -21,14 +20,17 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Future<void> _fetchMatchingResults() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('matching_results').get();
-    List<Map<String, dynamic>> results = querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-
-    setState(() {
-      _matchingResults = results;
-      _filteredResults = results;
-      _isLoading = false;
-    });
+    final response = await http.get(Uri.parse('http://localhost:3000/api/matching_results'));
+    if (response.statusCode == 200) {
+      List<Map<String, dynamic>> results = List<Map<String, dynamic>>.from(json.decode(response.body));
+      setState(() {
+        _matchingResults = results;
+        _filteredResults = results;
+        _isLoading = false;
+      });
+    } else {
+      throw Exception('Failed to load matching results');
+    }
   }
 
   void _filterResults(String query) {
@@ -41,7 +43,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Future<void> _downloadResults() async {
-    // Implement the logic to download the matching results
+    final response = await http.get(Uri.parse('http://localhost:3000/api/matching_results'));
+    if (response.statusCode == 200) {
+      // Implement the logic to download the matching results
+    } else {
+      throw Exception('Failed to download matching results');
+    }
   }
 
   @override
