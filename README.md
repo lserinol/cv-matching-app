@@ -97,6 +97,32 @@ class MyApp extends StatelessWidget {
 }
 ```
 
+### Setting up SQLite Database
+
+1. Install SQLite:
+
+```bash
+sudo apt-get install sqlite3
+```
+
+2. Create the SQLite database file:
+
+```bash
+sqlite3 cv.db
+```
+
+3. Create the `cv` table in the database:
+
+```sql
+CREATE TABLE cv (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fileName TEXT NOT NULL,
+    downloadURL TEXT NOT NULL,
+    uploadedAt TEXT NOT NULL,
+    extractedInfo TEXT
+);
+```
+
 ### Running the application
 
 1. Run the Flutter web application:
